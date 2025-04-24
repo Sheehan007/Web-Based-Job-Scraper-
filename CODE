@@ -1,0 +1,83 @@
+import time 
+import requests
+import pandas as pd
+from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+
+roles = ['Intern']
+cities = ['Mumbai']
+
+headers = {"User-Agent": "Mozilla/5.0"}
+
+job_data = []
+
+# INDEED SCRAPER
+def scrape_indeed(role, city):
+    query = "+".join(role.split())
+    location = "+".join(city.split())
+    url = f"https://www.indeed.com/jobs?q={query}&l={location}"
+    resp = requests.get(url, headers=headers)
+    soup = BeautifulSoup(resp.text, "html.parser")
+    cards = soup.find_all("div", class_="job_seen_beacon")
+
+    for card in cards:
+        title = card.find("h2").text.strip() if card.find("h2") else None
+        company = card.find("span", class_="companyName")
+        company = company.text.strip() if company else None
+        location = card.find("div", class_="companyLocation")
+        location = location.text.strip() if location else None
+        summary = card.find("div", class_="job-snippet")
+        summary = summary.text.strip().replace("\n", " ") if summary else None
+        job_data.append(["Indeed", title, company, location, summary])
+
+
+# GLASSDOOR SCRAPER
+def scrape_glassdoor(role, city, driver):
+    search_url = f"https://www.glassdoor.com/Job/jobs.htm?sc.keyword={'+'.join(role.split())}&locT=C&locId=&locKeyword={'+'.join(city.split())}"
+    driver.get(search_url)
+    time.sleep(3)
+
+    soup = BeautifulSoup(driver.page_source, "html.parser")
+    jobs = soup.find_all("li", class_="react-job-listing")
+    for job in jobs:
+        title = job.find("a", class_="jobLink").text.strip() if job.find("a", class_="jobLink") else None
+        company = job.find("div", class_="jobHeader").text.strip() if job.find("div", class_="jobHeader") else None
+        location = job.find("span", class_="css-56kyx5").text.strip() if job.find("span", class_="css-56kyx5") else None
+        job_data.append(["Glassdoor", title, company, location, "N/A"])
+
+
+# GOOGLE JOBS SCRAPER
+def scrape_google_jobs(role, city, driver):
+    search_url = f"https://www.google.com/search?q={'+'.join(role.split())}+jobs+in+{'+'.join(city.split())}"
+    driver.get(search_url)
+    time.sleep(3)
+
+    soup = BeautifulSoup(driver.page_source, "html.parser")
+    jobs = soup.find_all("div", class_="BjJfJf PUpOsf")  # class might vary; adjust if needed
+    for job in jobs:
+        title = job.find("div", class_="BjJfJf PUpOsf").text.strip() if job.find("div", class_="BjJfJf PUpOsf") else None
+        job_data.append(["Google Jobs", title, "N/A", city, "N/A"])
+
+def main():
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")
+    driver = webdriver.Chrome(options=chrome_options)
+
+    for role in roles:
+        for city in cities:
+            print(f"Scraping {role} in {city}")
+            scrape_indeed(role, city)
+            scrape_glassdoor(role, city, driver)
+            scrape_google_jobs(role, city, driver)
+
+    driver.quit()
+
+    df = pd.DataFrame(job_data, columns=["Source", "Title", "Company", "Location", "Description"])
+    df.to_csv("Downloads/job_postings.csv", index=False)
+    print("Scraping complete. Data saved to 'job_postings.csv'.")
+
+
+if __name__ == "__main__":
+    main()
+    
