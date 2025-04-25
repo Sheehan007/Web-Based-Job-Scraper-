@@ -1,1 +1,64 @@
+import matplotlib.pyplot as plt
+import seaborn as sns
+import pandas as pd
+
+us_df = pd.read_csv('Downloads/YT_videos_US.csv')
+in_df = pd.read_csv('Downloads/YT_videos_IN.csv')
+# print (us_df.head())
+# print (in_df.head())
+
+# 1. Data Cleaning and Standardization
+combined_df = pd.concat([us_df, in_df], ignore_index=True)
+combined_df['trending_date'] = pd.to_datetime(combined_df['trending_date'], format = '%y.%d.%m')
+#print(combined_df.head())
+
+
+# 2. Sentiment Analysis Analyzer
+# VADER (Valence Aware Dictionary and sEntiment Reasoner)
+# Sentiment Analysis on Titles & Tags (NLTK)
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+import nltk
+nltk.download('vader_lexicon')
+
+sid = SentimentIntensityAnalyzer()
+
+def get_sentiment(text):
+    score = sid.polarity_scores(str(text))
+    return score['compound']
+
+#combined_df['title_sentiment'] = combined_df['title'].apply(get_sentiment)
+#combined_df['tag_sentiment'] = combined_df['tags'].apply(get_sentiment)
+
+# Exporting the combined_df into an excel file
+# combined_df.to_excel('Downloads/YT_combined.xlsx', index=False)
+
+# Calculating average views of video by category
+avg_views = (combined_df.groupby('category_id')['views']
+             .mean()
+             .reset_index()
+             .rename(columns={'views':'avg_views'})
+             .sort_values(by='avg_views', ascending = False )
+)
+
+
+# 3. SQL Analysis: Data Cleaning using MySQL
+# SELECT category_id, AVG(views) AS avg_views
+# FROM youtube_trending
+# GROUP BY category_id
+# ORDER BY avg_views DESC;
+
+
+# 4. Time-Series Analysis
+# plot trending duration per video
+# duration = last trending date - first trending date
+trending_duration = combined_df.groupby('video_id')['trending_date'].agg(['min','max'])
+trending_duration['duration'] = (trending_duration['max'] - trending_duration['min']).dt.days
+
+
+# 5. Creating chart using matplotlib and seaborn
+import matplotlib.pyplot as plt
+import seaborn as sns
+sns.histplot(trending_duration['duration'], bins=20)
+plt.title('Distribution of Trending Duration')
+plt.show()
 
