@@ -18,3 +18,40 @@ An Excel file (`job_postings.xlsx`) with the following columns:
 3. `Company`
 4. `Location`
 5. `Summary/Description`
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+YouTube Trending Video Analytics in India and the USA
+
+Analyze and visualize YouTube trending video data across regions to uncover global and local content patterns. 
+
+Salient features: 
+This project analyzes YouTube trending video datasets to discover:
+- Most popular genres and categories
+- Sentiment trends in video titles and tags
+- Regional content preferences
+- Trending durations over time
+
+Merged dataset: 
+**YT_combined.xlsx**
+- Fields include: `video_id`, `title`, `channel_title`, `publish_time`, `trending_date`, `views`, `likes`, `dislikes`, `comment_count`, `tags`
+
+Analysis Highlights
+- Data Cleaning and Standardization across multiple countries
+- Sentiment Analysis using NLTK VADER
+- SQL aggregation to rank content categories by average views
+- Time-series visualization of video trending duration
+
+Key Visualizations: 
+- Channel Dominance by Views (Treemap)
+- Top KPIs- Total Views, Avg Likes, Avg Dislikes, Total Trending Videos
+- Bar Chart- Trending Category vs Time Duration
+- Area Chart- Relation between Title_sentiment and Tag_sentiment
+
+
+Deliverables
+- Power BI/Tableau Dashboard (Genres, Sentiments, Trends)
+- Final Report with Data Storytelling
+- Cleaned and Processed Dataset
+
+Author: Sheehan Mathur
